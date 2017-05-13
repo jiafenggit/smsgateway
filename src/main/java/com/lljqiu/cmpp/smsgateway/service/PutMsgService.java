@@ -46,7 +46,7 @@ public class PutMsgService {
         connectResp.setStatus(status);
         connectResp.setAuthenticatorISMG(connectReq.getAuthenticatorSource());
         connectReq.setVersion(connectReq.getVersion());
-        logger.debug("{}响应消息{}",MsgCommand.CMPP_CONNECT_RESP,ToStringBuilder.reflectionToString(connectResp));
+        logger.debug("<{}响应消息{}>","CONNECT_RESP",ToStringBuilder.reflectionToString(connectResp));
         return connectResp.toByteArry();
     }
 }

@@ -37,14 +37,16 @@ public class SMSServer {
     @SuppressWarnings("resource")
     public void socketServer(int port) throws Exception {
         ServerSocket serverSocket = new ServerSocket(port);
+        logger.info("start server success...");
+        Socket socket = serverSocket.accept();
         while (true) {
             // 读取客户端数据    
-            Socket socket = serverSocket.accept();
             String spIp = socket.getInetAddress().getHostAddress();
             DataInputStream input = new DataInputStream(socket.getInputStream());
             byte[] readRequestMessage = ReadMsgService.readRequestMessage(input, spIp);
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             out.write(readRequestMessage);
+            out.flush();
             //out.close();
             //input.close();
         }

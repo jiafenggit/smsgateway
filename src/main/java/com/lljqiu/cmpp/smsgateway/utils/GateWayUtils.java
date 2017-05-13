@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
  * 短信接口辅助工具类
  */
 public class GateWayUtils {
-    private static Logger    logger   = LoggerFactory.getLogger(GateWayUtils.class);
-    private static int sequenceId = 0;//序列编号
+    private static Logger logger     = LoggerFactory.getLogger(GateWayUtils.class);
+    private static int    sequenceId = 0;                                          //序列编号
 
     /**
      * 序列 自增
@@ -65,6 +65,7 @@ public class GateWayUtils {
             return null;
         }
     }
+
     /** 
      * Description：校验源地址
      * @param spId
@@ -75,18 +76,18 @@ public class GateWayUtils {
      * @author name：liujie <br>email: liujie@lljqiu.com
      * @param bs 
      **/
-    public static boolean checkAuthenticatorSource(String spId, String secret, String timestamp, byte[] bs){
+    public static boolean checkAuthenticatorSource(String spId, String secret, String timestamp, byte[] bs) {
         boolean result = false;
         try {
-            logger.debug("spId={},secret={}",spId,secret+"timestamp="+timestamp);
+            logger.debug("spId={},secret={}", spId, secret + "timestamp=" + timestamp);
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] data = (spId + "\0\0\0\0\0\0\0\0\0" + secret + timestamp).getBytes();
             byte[] digest = md5.digest(data);
-            logger.debug("digest={},bs={}",digest,bs);
+            logger.debug("digest={},bs={}", digest, bs);
             result = digest.equals(bs);
-            logger.debug("result={}",result);
-        
-        }catch(Exception e){
+            logger.debug("result={}", result);
+
+        } catch (Exception e) {
             logger.error("校验AuthenticatorSource失败：" + e.getMessage());
         }
         return result;
@@ -199,7 +200,7 @@ public class GateWayUtils {
         }
         return reValue.toString().toUpperCase();
     }
-    
+
     /** 
      * Description：string to list
      * @param delimiter
@@ -218,5 +219,18 @@ public class GateWayUtils {
             list.add(str);
         }
         return list;
+    }
+
+    public static long Bytes8ToLong(byte abyte0[]) {
+        long ret = 0;
+
+        ret = (0xffL & abyte0[0]) << 56 | (0xffL & abyte0[1]) << 48 | (0xffL & abyte0[2]) << 40
+                | (0xffL & abyte0[3]) << 32 | (0xffL & abyte0[4]) << 24 | (0xffL & abyte0[5]) << 16
+                | (0xffL & abyte0[6]) << 8 | 0xffL & abyte0[7];
+
+        return ret;
+    }
+    public static int byteToInt(byte byte0) {
+        return byte0;
     }
 }

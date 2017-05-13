@@ -11,9 +11,7 @@ package com.lljqiu.cmpp.smsgateway.service;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
@@ -22,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import com.lljqiu.cmpp.smsgateway.stack.MsgCommand;
 import com.lljqiu.cmpp.smsgateway.stack.MsgConnect;
 import com.lljqiu.cmpp.smsgateway.stack.MsgHead;
+import com.lljqiu.cmpp.smsgateway.stack.MsgSubmit;
+import com.lljqiu.cmpp.smsgateway.utils.GateWayUtils;
 
 /** 
  * ClassName: ReadMsgService.java <br>
@@ -73,14 +73,142 @@ public class ReadMsgService {
         switch (head.getCommandId()) {
             case MsgCommand.CMPP_CONNECT:
                 MsgConnect connectReq = readConnect(requestData,spIp);
-                logger.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "链接短信网关,version:"
-                        + connectReq.getVersion() + " 序列号：" + connectReq.getSequenceId());
+                logger.info("<链接短信网关,version:" + connectReq.getVersion() + " 序列号：" + connectReq.getSequenceId()+">");
                 result = PutMsgService.setConnectResp(connectReq);
+                break;
+            case MsgCommand.CMPP_SUBMIT:
+                MsgSubmit submitReq = readSubmit(requestData);
+                logger.debug(ToStringBuilder.reflectionToString(submitReq));
+                logger.info("<下发短信,手机号:" + submitReq.getDestTerminalId() + " 序列号：" + submitReq.getSequenceId()+">");
+                logger.info("<下发短信,短信内容:" + submitReq.getStrMsgContent() + " 序列号：" + submitReq.getSequenceId()+">");
                 break;
         }
         return result;
     }
     
+    /** 
+     * Description：读取提交信息消息
+     * @param requestData
+     * @return
+     * @return MsgSubmit
+     * @author name：liujie <br>email: liujie@lljqiu.com
+     **/
+    private static MsgSubmit readSubmit(byte[] requestData) {
+        logger.info("<接受Submit Message>");
+        MsgSubmit submitReq = new MsgSubmit();
+        ByteArrayInputStream bins = new ByteArrayInputStream(requestData);
+        DataInputStream dins = new DataInputStream(bins);
+        try {
+            submitReq.setTotalLength(requestData.length + 4);
+            submitReq.setCommandId(dins.readInt());
+            submitReq.setSequenceId(dins.readInt());
+            
+            byte[] Msg_Id = new byte[8];
+            dins.read(Msg_Id);
+            submitReq.setMsgId(GateWayUtils.Bytes8ToLong(Msg_Id));
+            
+            byte[] Pk_total = new byte[1];
+            dins.read(Pk_total);
+            submitReq.setPkTotal(GateWayUtils.byteToInt(Pk_total[0]));
+            
+            byte[] Pk_number = new byte[1];
+            dins.read(Pk_number);
+            submitReq.setPkNumber(GateWayUtils.byteToInt(Pk_number[0]));
+            
+            byte[] Registered_Delivery = new byte[1];
+            dins.read(Registered_Delivery);
+            submitReq.setRegisteredDelivery(GateWayUtils.byteToInt(Registered_Delivery[0]));
+            
+            byte[] Msg_level = new byte[1];
+            dins.read(Msg_level);
+            submitReq.setMsgLevel(GateWayUtils.byteToInt(Msg_level[0]));
+            
+            byte[] Service_Id = new byte[10];
+            dins.read(Service_Id);
+            submitReq.setServiceId(new String(Service_Id,0,10));
+            
+            byte[] Fee_UserType = new byte[1];
+            dins.read(Fee_UserType);
+            submitReq.setFeeUserType(GateWayUtils.byteToInt(Fee_UserType[0]));
+            
+            byte[] Fee_terminal_Id = new byte[32];
+            dins.read(Fee_terminal_Id);
+            submitReq.setFeeTerminalId(new String(Fee_terminal_Id,0,32));
+            
+            byte[] Fee_terminal_type = new byte[1];
+            dins.read(Fee_terminal_type);
+            submitReq.setFeeTerminalType(GateWayUtils.byteToInt(Fee_terminal_type[0]));
+            
+            byte[] TP_pId = new byte[1];
+            dins.read(TP_pId);
+            submitReq.setTpPId(GateWayUtils.byteToInt(TP_pId[0]));
+            
+            byte[] TP_udhi = new byte[1];
+            dins.read(TP_udhi);
+            submitReq.setTpUdhi(GateWayUtils.byteToInt(TP_udhi[0]));
+            
+            byte[] Msg_Fmt = new byte[1];
+            dins.read(Msg_Fmt);
+            submitReq.setMsgFmt(GateWayUtils.byteToInt(Msg_Fmt[0]));
+            
+            byte[] Msg_src = new byte[6];
+            dins.read(Msg_src);
+            submitReq.setMsgSrc(new String(Msg_src,0,6));
+            
+            byte[] FeeType = new byte[2];
+            dins.read(FeeType);
+            submitReq.setFeeType(new String(FeeType,0,2));
+            
+            byte[] FeeCode = new byte[6];
+            dins.read(FeeCode);
+            submitReq.setFeeCode(new String(FeeCode,0,6));
+            
+            byte[] ValId_Time = new byte[17];
+            dins.read(ValId_Time);
+            submitReq.setValIdTime(new String(ValId_Time,0,17));
+            
+            byte[] At_Time = new byte[17];
+            dins.read(At_Time);
+            submitReq.setAtTime(new String(At_Time,0,17));
+            
+            byte[] Src_Id = new byte[21];
+            dins.read(Src_Id);
+            submitReq.setSrcId(new String(Src_Id,0,21));
+            
+            byte[] DestUsr_tl = new byte[1];
+            dins.read(DestUsr_tl);
+            int destUsrTl = GateWayUtils.byteToInt(DestUsr_tl[0]);
+            submitReq.setDestUsrTl(destUsrTl);
+            
+            int Dest_terminal_Id_length = 32*destUsrTl;
+            byte[] Dest_terminal_Id = new byte[Dest_terminal_Id_length];
+            dins.read(Dest_terminal_Id);
+            submitReq.addDestTerminalId(new String(Dest_terminal_Id,0,Dest_terminal_Id_length));
+            
+            byte[] Dest_terminal_type = new byte[1];
+            dins.read(Dest_terminal_type);
+            submitReq.setDestTerminalType(GateWayUtils.byteToInt(Dest_terminal_type[0]));
+            
+            byte[] Msg_Length = new byte[1];
+            dins.read(Msg_Length);
+            int msgLength = GateWayUtils.byteToInt(Msg_Length[0]);
+            submitReq.setMsgLength(msgLength);
+           
+            byte[] Msg_Content = new byte[msgLength];
+            dins.read(Msg_Content);
+            submitReq.setMsgContent(Msg_Content);
+            
+            byte[] LinkID = new byte[20];
+            dins.read(LinkID);
+            submitReq.setLinkID(new String(LinkID,0,20));
+            
+            dins.close();
+            bins.close();
+        } catch (IOException e) {
+            logger.info("read Submit Message error{}" + e.getMessage());
+        }
+        return submitReq;
+    }
     /** 
      * Description：读取线路连接消息
      * @param requestData
@@ -90,6 +218,7 @@ public class ReadMsgService {
      * @author name：liujie <br>email: liujie@lljqiu.com
      **/
     public static MsgConnect readConnect(byte[] requestData,String spIp) throws IOException{
+        logger.info("<接受链路请求>");
         MsgConnect msgConnect = new MsgConnect();
         msgConnect.setSpIp(spIp);
         if (requestData.length == 8 + 6 + 16 + 1 +4) {
@@ -101,7 +230,6 @@ public class ReadMsgService {
                 msgConnect.setSequenceId(dins.readInt());
                 byte[] sourceAddr = new byte[6];
                 dins.read(sourceAddr);
-                logger.debug("sourceAddr:"+new String(sourceAddr));
                 msgConnect.setSourceAddr(new String(sourceAddr));
                 byte[] aiByte = new byte[16];
                 dins.read(aiByte);
