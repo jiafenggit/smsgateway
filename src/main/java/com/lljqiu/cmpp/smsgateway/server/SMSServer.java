@@ -9,6 +9,7 @@ package com.lljqiu.cmpp.smsgateway.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -25,8 +26,8 @@ import com.lljqiu.cmpp.smsgateway.utils.GatewayConfig;
  * Create Time: 2017年5月13日<br>
  */
 public class SMSServer {
-    private static Logger    logger   = LoggerFactory.getLogger(SMSServer.class);
-    
+    private static Logger logger = LoggerFactory.getLogger(SMSServer.class);
+
     /** 
      * Description：初始化server
      * @param port 监听端口
@@ -35,20 +36,24 @@ public class SMSServer {
      * @author name：liujie <br>email: liujie@lljqiu.com
      **/
     @SuppressWarnings("resource")
-    public void socketServer(int port) throws Exception {
-        ServerSocket serverSocket = new ServerSocket(port);
-        logger.info("start server success...");
-        Socket socket = serverSocket.accept();
-        while (true) {
-            // 读取客户端数据    
-            String spIp = socket.getInetAddress().getHostAddress();
-            DataInputStream input = new DataInputStream(socket.getInputStream());
-            byte[] readRequestMessage = ReadMsgService.readRequestMessage(input, spIp);
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.write(readRequestMessage);
-            out.flush();
-            //out.close();
-            //input.close();
+    public void socketServer(int port) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
+            logger.info("start server success...");
+            Socket socket = serverSocket.accept();
+            while (true) {
+                // 读取客户端数据    
+                String spIp = socket.getInetAddress().getHostAddress();
+                DataInputStream input = new DataInputStream(socket.getInputStream());
+                byte[] readRequestMessage = ReadMsgService.readRequestMessage(input, spIp);
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                out.write(readRequestMessage);
+                out.flush();
+
+            }
+        } catch (IOException e) {
+            logger.error("start server error{}", e);
+            
         }
     }
 
@@ -58,13 +63,9 @@ public class SMSServer {
      * @author name：liujie <br>email: liujie@lljqiu.com
      **/
     public void start() {
-        try {
-            logger.info("start server port={}",GatewayConfig.getGatewayPort());
-            socketServer(GatewayConfig.getGatewayPort());
-        } catch (Exception e) {
-            logger.error("init server error{}",e.getMessage());
-        }
-        
+        logger.info("start server port={}", GatewayConfig.getGatewayPort());
+        socketServer(GatewayConfig.getGatewayPort());
+
     }
 
 }

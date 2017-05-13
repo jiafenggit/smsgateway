@@ -16,6 +16,9 @@ import com.lljqiu.cmpp.smsgateway.exception.GateWayException;
 import com.lljqiu.cmpp.smsgateway.stack.MsgCommand;
 import com.lljqiu.cmpp.smsgateway.stack.MsgConnect;
 import com.lljqiu.cmpp.smsgateway.stack.MsgConnectResp;
+import com.lljqiu.cmpp.smsgateway.stack.MsgSubmit;
+import com.lljqiu.cmpp.smsgateway.stack.MsgSubmitResp;
+import com.lljqiu.cmpp.smsgateway.utils.GateWayUtils;
 
 /** 
  * ClassName: PutMsgService.java <br>
@@ -34,9 +37,9 @@ public class PutMsgService {
      **/
     public static byte[] setConnectResp(MsgConnect connectReq){
         MsgConnectResp connectResp = new MsgConnectResp();
-        connectResp.setTotalLength(12 + 4 + 16 + 1);//消息总长度，级总字节数:4+4+4(消息头)+6+16+1+4(消息主体)
-        connectResp.setCommandId(MsgCommand.CMPP_CONNECT_RESP);//标识创建连接
-        connectResp.setSequenceId(connectReq.getSequenceId());//序列，由我们指定
+        connectResp.setTotalLength(12 + 4 + 16 + 1);
+        connectResp.setCommandId(MsgCommand.CMPP_CONNECT_RESP);
+        connectResp.setSequenceId(connectReq.getSequenceId());
         int status = 0x0000;
         try {
             CheckService.checkConnectRequest(connectReq);
@@ -48,5 +51,23 @@ public class PutMsgService {
         connectReq.setVersion(connectReq.getVersion());
         logger.debug("<{}响应消息{}>","CONNECT_RESP",ToStringBuilder.reflectionToString(connectResp));
         return connectResp.toByteArry();
+    }
+    
+    /** 
+     * Description：拼接submit请求响应
+     * @param submitReq
+     * @return
+     * @return byte []
+     * @author name：liujie <br>email: liujie@lljqiu.com
+     **/
+    public static byte[] setSubmitResp(MsgSubmit submitReq) {
+        MsgSubmitResp submitResp = new MsgSubmitResp();
+        submitResp.setTotalLength(12 + 8 + 4);
+        submitResp.setCommandId(MsgCommand.CMPP_SUBMIT_RESP);
+        submitResp.setSequenceId(submitReq.getSequenceId());
+        submitResp.setMsgId(Long.parseLong(GateWayUtils.getTimestamp()));
+        int status = 0x0000;
+        submitResp.setResult(status);
+        return submitResp.toByteArry();
     }
 }

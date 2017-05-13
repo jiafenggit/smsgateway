@@ -81,6 +81,7 @@ public class ReadMsgService {
                 logger.debug(ToStringBuilder.reflectionToString(submitReq));
                 logger.info("<下发短信,手机号:" + submitReq.getDestTerminalId() + " 序列号：" + submitReq.getSequenceId()+">");
                 logger.info("<下发短信,短信内容:" + submitReq.getStrMsgContent() + " 序列号：" + submitReq.getSequenceId()+">");
+                result = PutMsgService.setSubmitResp(submitReq);
                 break;
         }
         return result;
